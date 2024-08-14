@@ -22,7 +22,11 @@ message ClobMatch {
 // MakerFill represents the filled amount of a matched maker order.
 message MakerFill {
   // The filled amount of the matched maker order, in base quantums.
-  uint64 fill_amount = 1;
+  bytes fill_amount = 1 [
+    (gogoproto.customtype) = "github.com/StreamFinance-Protocol/stream-chain/"
+                              "protocol/dtypes.SerializableInt",
+    (gogoproto.nullable) = false
+  ];
   // The `OrderId` of the matched maker order.
   dydxcometbft.clob.OrderId maker_order_id = 2 [ (gogoproto.nullable) = false ];
 }
@@ -33,11 +37,6 @@ message MatchOrders {
   dydxcometbft.clob.OrderId taker_order_id = 1 [ (gogoproto.nullable) = false ];
   // An ordered list of fills created by this taker order.
   repeated MakerFill fills = 2 [ (gogoproto.nullable) = false ];
-  // The `OrderHash` of the taker order. Used to differentiate replacement
-  // orders.
-  // TODO(CLOB-274): Determine whether this can replace the `taker_order_id`
-  // above, or if this is necessary to be included in the block at all.
-  bytes taker_order_hash = 3;
 }
 
 // MatchPerpetualLiquidation is an injected message used for liquidating a
@@ -51,7 +50,11 @@ message MatchPerpetualLiquidation {
   // The ID of the perpetual involved in the liquidation.
   uint32 perpetual_id = 3;
   // The total size of the liquidation order including any unfilled size.
-  uint64 total_size = 4;
+  bytes total_size = 4 [
+    (gogoproto.customtype) = "github.com/StreamFinance-Protocol/stream-chain/"
+                              "protocol/dtypes.SerializableInt",
+    (gogoproto.nullable) = false
+  ];
   // `true` if liquidating a short position, `false` otherwise.
   bool is_buy = 5;
   // An ordered list of fills created by this liquidation.
@@ -66,15 +69,26 @@ message MatchPerpetualDeleveraging {
       [ (gogoproto.nullable) = false ];
   // The ID of the perpetual that was liquidated.
   uint32 perpetual_id = 2;
-  // Fill represents a fill between the liquidated and deleveraged subaccount.
+  // Fill represents a fill between the liquidated and offsetting subaccount.
   message Fill {
     // ID of the subaccount that was deleveraged.
-    dydxcometbft.subaccounts.SubaccountId deleveraged = 1
+    dydxcometbft.subaccounts.SubaccountId offsetting_subaccount_id = 1
         [ (gogoproto.nullable) = false ];
     // The amount filled between the liquidated and deleveraged position, in
     // base quantums.
-    uint64 fill_amount = 2;
+    bytes fill_amount = 2 [
+      (gogoproto.customtype) = "github.com/StreamFinance-Protocol/stream-chain/"
+                                "protocol/dtypes.SerializableInt",
+      (gogoproto.nullable) = false
+    ];
   }
   // An ordered list of fills created by this liquidation.
   repeated Fill fills = 3 [ (gogoproto.nullable) = false ];
+
+  // Flag denoting whether the deleveraging operation was for the purpose
+  // of final settlement. Final settlement matches are at the oracle price,
+  // whereas deleveraging happens at the bankruptcy price of the deleveraged
+  // subaccount.
+  bool is_final_settlement = 4;
 }
+
