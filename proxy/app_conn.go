@@ -8,6 +8,7 @@ import (
 
 	abcicli "github.com/cometbft/cometbft/abci/client"
 	"github.com/cometbft/cometbft/abci/types"
+	comettypes "github.com/cometbft/cometbft/types"
 )
 
 //go:generate ../scripts/mockery_generate.sh AppConnConsensus|AppConnMempool|AppConnQuery|AppConnSnapshot
@@ -23,7 +24,7 @@ type AppConnConsensus interface {
 	ExtendVote(context.Context, *types.RequestExtendVote) (*types.ResponseExtendVote, error)
 	VerifyVoteExtension(context.Context, *types.RequestVerifyVoteExtension) (*types.ResponseVerifyVoteExtension, error)
 	FinalizeBlock(context.Context, *types.RequestFinalizeBlock) (*types.ResponseFinalizeBlock, error)
-	Commit(context.Context) (*types.ResponseCommit, error)
+	Commit(context.Context, comettypes.ExtendedCommit) (*types.ResponseCommit, error)
 }
 
 type AppConnMempool interface {
@@ -104,9 +105,9 @@ func (app *appConnConsensus) FinalizeBlock(ctx context.Context, req *types.Reque
 	return app.appConn.FinalizeBlock(ctx, req)
 }
 
-func (app *appConnConsensus) Commit(ctx context.Context) (*types.ResponseCommit, error) {
+func (app *appConnConsensus) Commit(ctx context.Context, extendedCommit comettypes.ExtendedCommit) (*types.ResponseCommit, error) {
 	defer addTimeSample(app.metrics.MethodTimingSeconds.With("method", "commit", "type", "sync"))()
-	return app.appConn.Commit(ctx, &types.RequestCommit{})
+	return app.appConn.Commit(ctx, &types.RequestCommit{ExtendedCommit: extendedCommit.ToProto()})
 }
 
 //------------------------------------------------
