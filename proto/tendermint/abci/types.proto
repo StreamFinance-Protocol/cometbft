@@ -103,7 +103,7 @@ message RequestCheckTx {
 }
 
 message RequestCommit {
-  tendermint.types.ExtendedCommit extended_commit = 1;
+  ExtendedCommitInfo extended_commit_info = 1;
 }
 
 // lists available snapshots

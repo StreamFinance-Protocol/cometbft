@@ -392,7 +392,9 @@ func (blockExec *BlockExecutor) Commit(
 	abciResponse *abci.ResponseFinalizeBlock,
 ) (int64, error) {
 	// Commit block, get hash back
-	res, err := blockExec.proxyApp.Commit(context.TODO(), *blockExec.blockStore.LoadBlockExtendedCommit(block.Height))
+	extendedCommit := blockExec.blockStore.LoadBlockExtendedCommit(block.Height)
+	extendedCommitInfo := buildExtendedCommitInfoFromStore(extendedCommit, blockExec.store, state.InitialHeight, state.ConsensusParams.ABCI)
+	res, err := blockExec.proxyApp.Commit(context.TODO(), &extendedCommitInfo)
 	if err != nil {
 		blockExec.logger.Error("client error during proxyAppConn.CommitSync", "err", err)
 		return 0, err
@@ -752,7 +754,7 @@ func ExecCommitBlock(
 	logger.Info("executed block", "height", block.Height, "app_hash", fmt.Sprintf("%X", resp.AppHash))
 
 	// Commit block
-	_, err = appConnConsensus.Commit(context.TODO(), types.ExtendedCommit{}) // empty as we are simply replaying blocks
+	_, err = appConnConsensus.Commit(context.TODO(), &abci.ExtendedCommitInfo{}) // empty as we are simply replaying blocks
 	if err != nil {
 		logger.Error("client error during proxyAppConn.Commit", "err", err)
 		return nil, err
