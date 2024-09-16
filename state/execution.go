@@ -246,6 +246,7 @@ func (blockExec *BlockExecutor) ApplyBlock(
 		"num_txs_res", len(abciResponse.TxResults),
 		"num_val_updates", len(abciResponse.ValidatorUpdates),
 		"block_app_hash", fmt.Sprintf("%X", abciResponse.AppHash),
+		"time", time.Now().UnixMilli(),
 	)
 
 	// Assert that the application correctly returned tx results for each of the transactions provided in the block
@@ -253,7 +254,7 @@ func (blockExec *BlockExecutor) ApplyBlock(
 		return state, fmt.Errorf("expected tx results length to match size of transactions in block. Expected %d, got %d", len(block.Data.Txs), len(abciResponse.TxResults))
 	}
 
-	blockExec.logger.Info("executed block", "height", block.Height, "app_hash", fmt.Sprintf("%X", abciResponse.AppHash))
+	blockExec.logger.Info("executed block", "height", block.Height, "app_hash", fmt.Sprintf("%X", abciResponse.AppHash), "time", time.Now().UnixMilli())
 
 	fail.Fail() // XXX
 
@@ -405,6 +406,7 @@ func (blockExec *BlockExecutor) Commit(
 		"committed state",
 		"height", block.Height,
 		"block_app_hash", fmt.Sprintf("%X", block.AppHash),
+		"time", time.Now().UnixMilli(),
 	)
 
 	// Update mempool.
@@ -751,7 +753,7 @@ func ExecCommitBlock(
 		return nil, fmt.Errorf("expected tx results length to match size of transactions in block. Expected %d, got %d", len(block.Data.Txs), len(resp.TxResults))
 	}
 
-	logger.Info("executed block", "height", block.Height, "app_hash", fmt.Sprintf("%X", resp.AppHash))
+	logger.Info("executed block", "height", block.Height, "app_hash", fmt.Sprintf("%X", resp.AppHash), "time", time.Now().UnixMilli())
 
 	// Commit block
 	_, err = appConnConsensus.Commit(context.TODO(), &abci.ExtendedCommitInfo{}) // empty as we are simply replaying blocks
