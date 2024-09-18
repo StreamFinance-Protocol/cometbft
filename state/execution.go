@@ -106,6 +106,8 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 	proposerAddr []byte,
 ) (*types.Block, error) {
 
+	blockExec.logger.Error("TESTING: Creating Proposal Block")
+
 	maxBytes := state.ConsensusParams.Block.MaxBytes
 	emptyMaxBytes := maxBytes == -1
 	if emptyMaxBytes {
@@ -139,6 +141,7 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 			ProposerAddress:    block.ProposerAddress,
 		},
 	)
+	blockExec.logger.Error("TESTING: App Prepare Proposal returned with err value ", err)
 	if err != nil {
 		// The App MUST ensure that only valid (and hence 'processable') transactions
 		// enter the mempool. Hence, at this point, we can't have any non-processable
@@ -173,6 +176,7 @@ func (blockExec *BlockExecutor) ProcessProposal(
 		ProposerAddress:    block.ProposerAddress,
 		NextValidatorsHash: block.NextValidatorsHash,
 	})
+	blockExec.logger.Error("TESTING: App Process Proposal returned with err value ", err)
 	if err != nil {
 		return false, err
 	}
@@ -209,6 +213,8 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	// Lock the mempool.
 	blockExec.mempool.Lock()
 	defer blockExec.mempool.Unlock()
+
+	blockExec.logger.Error("TESTING: Applying Block")
 
 	// while mempool is Locked, flush to ensure all async requests have completed
 	// in the ABCI app before Commit.
@@ -743,6 +749,7 @@ func ExecCommitBlock(
 		Misbehavior:        block.Evidence.Evidence.ToABCI(),
 		Txs:                block.Txs.ToSliceOfBytes(),
 	})
+
 	if err != nil {
 		logger.Error("error in proxyAppConn.FinalizeBlock", "err", err)
 		return nil, err
