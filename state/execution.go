@@ -393,7 +393,12 @@ func (blockExec *BlockExecutor) Commit(
 ) (int64, error) {
 	// Commit block, get hash back
 	extendedCommit := blockExec.blockStore.LoadBlockExtendedCommit(block.Height)
-	extendedCommitInfo := buildExtendedCommitInfoFromStore(extendedCommit, blockExec.store, state.InitialHeight, state.ConsensusParams.ABCI)
+	extendedCommitInfo := abci.ExtendedCommitInfo{}
+	if extendedCommit == nil {
+		blockExec.logger.Error("no extended commit for height", "height", block.Height)
+	} else {
+		extendedCommitInfo = buildExtendedCommitInfoFromStore(extendedCommit, blockExec.store, state.InitialHeight, state.ConsensusParams.ABCI)
+	}
 	res, err := blockExec.proxyApp.Commit(context.TODO(), &extendedCommitInfo)
 	if err != nil {
 		blockExec.logger.Error("client error during proxyAppConn.CommitSync", "err", err)
