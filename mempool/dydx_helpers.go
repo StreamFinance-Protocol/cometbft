@@ -22,7 +22,7 @@ func IsShortTermClobOrderTransaction(
 	}
 	if cosmosTx.Body != nil && len(cosmosTx.Body.Messages) == 1 {
 		bytes := cosmosTx.Body.Messages[0].Value
-		if cosmosTx.Body.Messages[0].TypeUrl == "/dydxprotocol.clob.MsgPlaceOrder" {
+		if cosmosTx.Body.Messages[0].TypeUrl == "/klyraprotocol.clob.MsgPlaceOrder" {
 			msgPlaceOrder := &clob.MsgPlaceOrder{}
 			err := msgPlaceOrder.Unmarshal(bytes)
 			// In the case of an unmarshalling error, panic.
@@ -34,7 +34,7 @@ func IsShortTermClobOrderTransaction(
 			}
 			return msgPlaceOrder.Order.OrderId.IsShortTermOrder()
 		}
-		if cosmosTx.Body.Messages[0].TypeUrl == "/dydxprotocol.clob.MsgCancelOrder" {
+		if cosmosTx.Body.Messages[0].TypeUrl == "/klyraprotocol.clob.MsgCancelOrder" {
 			msgCancelOrder := &clob.MsgCancelOrder{}
 			err := msgCancelOrder.Unmarshal(bytes)
 			// In the case of an unmarshalling error, panic.
@@ -44,7 +44,7 @@ func IsShortTermClobOrderTransaction(
 			}
 			return msgCancelOrder.OrderId.IsShortTermOrder()
 		}
-		if cosmosTx.Body.Messages[0].TypeUrl == "/dydxprotocol.clob.MsgBatchCancel" {
+		if cosmosTx.Body.Messages[0].TypeUrl == "/klyraprotocol.clob.MsgBatchCancel" {
 			// MsgBatchCancel only processes short term order cancellations as of right now.
 			return true
 		}
